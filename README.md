@@ -1,14 +1,18 @@
 ## Installation
 Dependencies for running the example include:
-tensorflow version 1.15 keras version 2.2.4.
-keras version 2.2.4.
-pyepics
-pcaspy
-h5py
-bokeh 
+- tensorflow version 1.15 keras version 2.2.4.
+- keras version 2.2.4.
+- pyepics
+- pcaspy
+- h5py
+- bokeh 
+
+
 
 pcaspy requires an EPICS install and has instructions on its website:
 https://pcaspy.readthedocs.io/en/latest/
+
+`conda install tensorflow keras pyepics h5py bokeh pcaspy matplotlib`
 
 ## Run
 from the command line execute:
