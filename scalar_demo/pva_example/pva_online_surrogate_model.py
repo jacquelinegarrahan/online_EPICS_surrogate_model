@@ -6,7 +6,6 @@ import time
 from epics import caget, PV
 import numpy as np
 import random
-from MakeModel import SurrogateModel
 
 from p4p.nt import NTScalar
 from p4p.server.thread import SharedPV
@@ -39,9 +38,7 @@ class PVServer:
 
             self.input_pv_state = pvdb[pvname]["value"]
 
-            pv = SharedPV(
-                handler=CMDPVHandler()
-            )  # SharedPV(nt=NTScalar('d'),initial=pvdb[pvname]['value'])
+            pv = SharedPV(handler=CMDPVHandler())  # SharedPV(nt=NTScalar('d'),initial=pvdb[pvname]['value'])
 
             @pv.put
             def onPut(pv, op):
@@ -56,21 +53,3 @@ class PVServer:
     def start_server(self):
 
         Server.forever(providers=[self.providers])
-
-
-if __name__ == "__main__":
-
-    pv = SharedPV(MyHandler())
-
-    sm = SurrogateModel(model_file="model_weights.h5")
-
-    cmd_pvdb = {}
-    for ii, input_name in enumerate(sm.input_names):
-        cmd_pvdb[input_name] = {"type": "d", "value": sm.input_ranges[ii][0]}
-
-    sim_pvdb = {}
-    for ii, output_name in enumerate(sm.output_names):
-        sim_pvdb[output_name] = {"type": "d", "value": 0}
-
-    server = PVServer(cmd_pvdb)
-    server.start_server()

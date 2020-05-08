@@ -6,7 +6,6 @@ import time
 from epics import caget, PV
 import numpy as np
 import random
-from MakeModel import SurrogateModel
 
 
 class SimDriver(Driver):
@@ -90,9 +89,7 @@ class SyncedSimPVServer:
     and publishes updated model data to output EPICS PVs.  Assumes fast model execution, as the model executes
     in the main CAS server thread.  CAS for the input and ouput PVs is handled by the SimDriver object"""
 
-    def __init__(
-        self, name, input_pvdb, output_pvdb, noise_params, model, sim_params=None
-    ):
+    def __init__(self, name, input_pvdb, output_pvdb, noise_params, model, sim_params=None):
 
         self.name = name
 
@@ -160,28 +157,3 @@ class SyncedSimPVServer:
 
     def stop_server(self):
         self.serve_data = False
-
-
-if __name__ == "__main__":
-
-    sm = SurrogateModel(model_file="model_weights.h5")
-
-    cmd_pvdb = {}
-    for ii, input_name in enumerate(sm.input_names):
-        cmd_pvdb[input_name] = {
-            "type": "float",
-            "prec": 8,
-            "value": sm.input_ranges[ii][0],
-        }
-
-    sim_pvdb = {}
-    for ii, output_name in enumerate(sm.output_names):
-        sim_pvdb[output_name] = {"type": "float", "prec": 8, "value": 0}
-
-    # Add in noise for fun
-    sim_pvdb["x_95coremit"]["scan"] = 0.2
-    noise_params = {"x_95coremit": {"sigma": 0.5e-7, "dist": "uniform"}}
-    # noise_params=None
-
-    server = SyncedSimPVServer("smvm", cmd_pvdb, sim_pvdb, noise_params, sm)
-    server.start_server()
