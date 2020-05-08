@@ -43,12 +43,12 @@ class PVServer:
 
             @pv.put
             def onPut(pv, op):
-                print("GEORGE", pv, op.name(), op.value())
                 pv.post(op.value())  # just store and update subscribers
                 pvname = op.name()
                 v = op.value()
 
                 op.done()
+
             self.providers[pvname] = pv
 
     def start_server(self):
