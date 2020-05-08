@@ -1,6 +1,8 @@
 import click
 import os
 
+MODEL_FILE = "scalar_demo/model/model_weights.h5"
+
 
 @click.group()
 def serve():
@@ -9,10 +11,10 @@ def serve():
 
 @serve.command()
 def launch_ca_server():
-    from scalar_demo.ca_example.MakeModel import SurrogateModel
+    from scalar_demo.model.surrogate_model import SurrogateModel
     from scalar_demo.ca_example.online_surrogate_model import SyncedSimPVServer
 
-    sm = SurrogateModel(model_file="model_weights.h5")
+    sm = SurrogateModel(model_file=MODEL_FILE)
 
     cmd_pvdb = {}
     for ii, input_name in enumerate(sm.input_names):
@@ -33,10 +35,10 @@ def launch_ca_server():
 
 @serve.command()
 def launch_pva_server():
-    from scalar_demo.pva_example.MakeModel import SurrogateModel
+    from scalar_demo.model.surrogate_model import SurrogateModel
     from scalar_demo.pva_example.pva_online_surrogate_model import SyncedSimPVServer
 
-    sm = SurrogateModel(model_file="model_weights.h5")
+    sm = SurrogateModel(model_file=MODEL_FILE)
 
     cmd_pvdb = {}
     for ii, input_name in enumerate(sm.input_names):
