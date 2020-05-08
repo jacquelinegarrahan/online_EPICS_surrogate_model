@@ -19,7 +19,13 @@ class pv_slider:
         self.pvname = pvname
         self.scale = scale
 
-        self.slider = Slider(title=title, value=scale * CONTEXT.get(pvname), start=start, end=end, step=step)
+        self.slider = Slider(
+            title=title,
+            value=scale * CONTEXT.get(pvname),
+            start=start,
+            end=end,
+            step=step,
+        )
         self.slider.on_change("value", self.set_pv_from_slider)
 
     def set_pv_from_slider(self, attrname, old, new):
@@ -39,7 +45,14 @@ for ii, pv in enumerate(pvs):
     pvname = prefix + pv
     step = (ranges[ii][-1] - ranges[ii][0]) / 100.0
 
-    pvs = pv_slider(title=title, pvname=pvname, scale=1, start=ranges[ii][0], end=ranges[ii][1], step=step)
+    pvs = pv_slider(
+        title=title,
+        pvname=pvname,
+        scale=1,
+        start=ranges[ii][0],
+        end=ranges[ii][1],
+        step=step,
+    )
     sliders.append(pvs.slider)
 
 scol = column(sliders, width=350)

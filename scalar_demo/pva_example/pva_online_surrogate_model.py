@@ -39,7 +39,9 @@ class PVServer:
 
             self.input_pv_state = pvdb[pvname]["value"]
 
-            pv = SharedPV(handler=CMDPVHandler())  # SharedPV(nt=NTScalar('d'),initial=pvdb[pvname]['value'])
+            pv = SharedPV(
+                handler=CMDPVHandler()
+            )  # SharedPV(nt=NTScalar('d'),initial=pvdb[pvname]['value'])
 
             @pv.put
             def onPut(pv, op):
