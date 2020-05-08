@@ -14,6 +14,11 @@ https://pcaspy.readthedocs.io/en/latest/
 
 `conda install tensorflow keras pyepics h5py bokeh pcaspy matplotlib`
 
+Alternatively, the conda environment can be created using the `environment.yml` file from the root of the project:
+
+`conda env create -f environment.yml`
+
+
 ## Run
 from the command line execute:
 

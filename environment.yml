@@ -1,0 +1,11 @@
+name: online_EPICS_surrogate_model
+dependencies:
+  - python=3.7
+  - tensorflow=1.15.0
+  - keras=2.2.4
+  - epics-base=7.0.3.1
+  - pyepics
+  - pcaspy=0.7.2
+  - h5py
+  - bokeh
+  - click
