@@ -7,8 +7,8 @@ def serve():
     pass
 
 
-@scrape.command()
-def launch_ca_server(server):
+@serve.command()
+def launch_ca_server():
     from scalar_demo.ca_example.MakeModel import SurrogateModel
     from scalar_demo.ca_example.online_surrogate_model import SyncedSimPVServer
 
@@ -31,10 +31,10 @@ def launch_ca_server(server):
     server.start_server()
 
 
-@scrape.command()
-def launch_pva_server(server):
+@serve.command()
+def launch_pva_server():
     from scalar_demo.pva_example.MakeModel import SurrogateModel
-    from scalar_demo.pva_example.online_surrogate_model import SyncedSimPVServer
+    from scalar_demo.pva_example.pva_online_surrogate_model import SyncedSimPVServer
 
     sm = SurrogateModel(model_file="model_weights.h5")
 
