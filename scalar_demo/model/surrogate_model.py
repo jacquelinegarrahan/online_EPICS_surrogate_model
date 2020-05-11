@@ -2,9 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys, os
 import keras
-import tensorflow
+import tensorflow as tf
 from keras.models import Sequential, Model, model_from_json
 from keras.layers import Input, Dense, Activation
+from keras import backend as K
 import h5py
 import random
 import time
@@ -12,7 +13,7 @@ import time
 
 class SurrogateModel:
     """ 
-Example Usage:
+    Example Usage:
     Load model and use a dictionary of inputs to evaluate the NN.
     """
 
@@ -36,6 +37,13 @@ Example Usage:
         self.json_string = self.JSON
         self.model = model_from_json(self.json_string.decode("utf-8"))
         self.model.load_weights(self.model_file)
+
+        # must initialize predict before threading
+        # NOTE: This isn't ideal and may fail in some cases
+        # Ideally, the model would be initialized in each thread, which
+        # will require using a custom Queue for the PVA handler callbacks
+        self.model._make_predict_function()
+
         ## Set basic values needed for input and output scaling
         self.model_value_max = attrs["upper"]
         self.model_value_min = attrs["lower"]
@@ -79,6 +87,8 @@ Example Usage:
         return data_unscaled
 
     def run(self, settings, request=None, verbose=False):
+        print(settings)
+        print("************")
         t = time.time()
         results = self.evaluate(settings)
         if verbose:
