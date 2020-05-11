@@ -33,7 +33,7 @@ def start_server(protocol):
 
 
     if protocol == "ca":
-        from scalar_demo.ca_example.online_surrogate_model import SyncedSimPVServer
+        from scalar_demo.server.ca import SyncedSimPVServer
 
         # Add in noise
         sim_pvdb["x_95coremit"]["scan"] = 0.2
@@ -44,7 +44,7 @@ def start_server(protocol):
             
 
     elif protocol == "pva":
-        from scalar_demo.pva_example.pva_online_surrogate_model import PVAServer
+        from scalar_demo.server.pva import PVAServer
 
         server = PVAServer(cmd_pvdb, sim_pvdb, sm)
         server.start_server()
