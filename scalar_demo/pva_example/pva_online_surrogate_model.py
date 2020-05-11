@@ -1,4 +1,5 @@
 import random
+import threading
 
 from p4p.nt import NTScalar
 from p4p.server.thread import SharedPV
@@ -7,20 +8,25 @@ from p4p.server import Server
 from scalar_demo.model.surrogate_model import SurrogateModel
 from scalar_demo import PREFIX, MODEL_FILE
 
-
 providers = {}
 input_pvs = {}
-model = SurrogateModel(model_file = MODEL_FILE)
+
+class ModelLoader(threading.local):
+    def __init__(self):
+        self.model = SurrogateModel(model_file = MODEL_FILE)
+
+# initialize loader for model 
+model_loader = ModelLoader()
+
 
 class InputHandler:
 
     def put(self, pv, op):
         global providers
-        global model
 
         pv.post(op.value())
         input_pvs[op.name().replace(f"{PREFIX}:", "")] = op.value()
-        output_pv_state = model.run(input_pvs, verbose=True)
+        output_pv_state = model_loader.model.run(input_pvs, verbose=True)
 
         # now update output variables
         for pv_item, value in output_pv_state.items():
@@ -46,7 +52,8 @@ class PVAServer:
         for in_pv in in_pvdb:
             input_pvs[in_pv] = in_pvdb[in_pv]["value"]
 
-        model.run(input_pvs, verbose=True)
+        # use main thread loaded model to do initial model run
+        model_loader.model.run(input_pvs, verbose=True)
 
         # create PVs for model inputs
         for in_pv in in_pvdb:
