@@ -11,6 +11,8 @@ from bokeh.plotting import figure
 from bokeh.layouts import column, row
 from bokeh.models.glyphs import MultiLine
 
+# import process variable prefix
+from scalar_demo import PREFIX
 
 class pv_buffer:
     def __init__(self, pv, buffer_size):
@@ -27,9 +29,7 @@ class pv_buffer:
     def poll(self):
 
         t = time.time()
-        v = caget(self.pvname)  # self.pv.get()
-
-        # print(t,v)
+        v = caget(self.pvname)
 
         if len(self.data) < self.buffer_size:
             self.time = np.append(self.time, t)
@@ -44,7 +44,7 @@ class pv_buffer:
         return self.time - self.tstart, self.data
 
 
-pvbuffer = pv_buffer("smvm:x_95coremit", 100)
+pvbuffer = pv_buffer(f"{PREFIX}:x_95coremit", 100)
 ts, ys = pvbuffer.poll()
 source = ColumnDataSource(dict(x=ts, y=ys * 1e6))
 p = figure(plot_width=400, plot_height=400, y_range=[0, 2])

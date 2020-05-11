@@ -7,6 +7,8 @@ from epics import caget, PV
 import numpy as np
 import random
 
+from scalar_demo import PREFIX
+
 
 class SimDriver(Driver):
     def __init__(self, input_pv_state, output_pv_state, noise_params=None):
@@ -50,7 +52,7 @@ class SimDriver(Driver):
                 self.output_pv_state[opv] = outpvs[opv]
                 self.setParam(opv, self.get_noisy_pv(opv))
                 post_updates = True
-
+                
         if post_updates:
             self.updatePVs()
 
@@ -89,9 +91,7 @@ class SyncedSimPVServer:
     and publishes updated model data to output EPICS PVs.  Assumes fast model execution, as the model executes
     in the main CAS server thread.  CAS for the input and ouput PVs is handled by the SimDriver object"""
 
-    def __init__(self, name, input_pvdb, output_pvdb, noise_params, model, sim_params=None):
-
-        self.name = name
+    def __init__(self, input_pvdb, output_pvdb, noise_params, model, sim_params=None):
 
         self.pvdb = {}
         self.input_pv_state = {}
@@ -121,9 +121,8 @@ class SyncedSimPVServer:
                     "value": noise_params[pv]["dist"],
                 }
 
-        prefix = self.name + ":"
         self.server = SimpleServer()
-        self.server.createPV(prefix, self.pvdb)
+        self.server.createPV(PREFIX + ":", self.pvdb)
 
         self.driver = SimDriver(self.input_pv_state, output_pv_state, noise_params)
 
@@ -150,7 +149,6 @@ class SyncedSimPVServer:
             self.server.process(0.1)
 
             while sim_pv_state != self.input_pv_state:
-
                 sim_pv_state = copy.deepcopy(self.input_pv_state)
                 output_pv_state = self.model.run(self.input_pv_state, verbose=True)
                 self.driver.set_output_pvs(output_pv_state)

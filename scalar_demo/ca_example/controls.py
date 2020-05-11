@@ -11,6 +11,8 @@ from bokeh.layouts import column, row
 from bokeh.models.glyphs import MultiLine
 from bokeh.models.glyphs import VArea
 
+# import process variable configs and prefix
+from scalar_demo import PVS, PREFIX
 
 class pv_slider:
     def __init__(self, title, pvname, scale, start, end, step):
@@ -27,25 +29,20 @@ class pv_slider:
         caput(self.pvname, new * self.scale)
 
 
-pvs = ["phi(1)", "maxb(2)", "q_total", "sig_x"]
-units = ["Deg", "T", "nC", "mm"]
-ranges = [[-10.0, 10.0], [0.0, 0.1], [0.0, 0.3], [0.1, 0.5]]
-prefix = "smvm:"
-
 sliders = []
 
-for ii, pv in enumerate(pvs):
+for ii, pv in enumerate(PVS):
 
-    title = pv + " (" + units[ii] + ")"
-    pvname = prefix + pv
-    step = (ranges[ii][-1] - ranges[ii][0]) / 100.0
+    title = pv + " (" + PVS[pv]["units"] + ")"
+    pvname = PREFIX + ":" + pv
+    step = (PVS[pv]["range"][1] - PVS[pv]["range"][0]) / 100.0
 
     pvs = pv_slider(
         title=title,
         pvname=pvname,
         scale=1,
-        start=ranges[ii][0],
-        end=ranges[ii][1],
+        start=PVS[pv]["range"][0],
+        end=PVS[pv]["range"][1],
         step=step,
     )
     sliders.append(pvs.slider)
