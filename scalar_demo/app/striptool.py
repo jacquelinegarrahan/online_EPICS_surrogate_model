@@ -1,6 +1,7 @@
 import numpy as np
 import time
-
+from argparse import ArgumentParser
+from epics import caget, caput, PV
 from p4p.client.thread import Context
 from bokeh.io import curdoc
 from bokeh.models import ColumnDataSource, Slider
@@ -9,24 +10,61 @@ from bokeh.layouts import column, row
 
 from scalar_demo import PREFIX
 
-CONTEXT = Context("pva")
+# Parse arguments passed through bokeh serve
+# requires protocol to be set
+parser = ArgumentParser()
+parser.add_argument("-p", "--protocol", metavar="PROTOCOL", nargs=1, type=str, choices=["pva", "ca"], help='Protocol to use (ca, pva)', required=True)
+args = parser.parse_args()
+
+PROTOCOL = args.protocol[0]
+
+# initialize context for pva
+CONTEXT = None
+if PROTOCOL == "pva":
+    CONTEXT = Context("pva")
+
 
 class pv_buffer:
     def __init__(self, pv, buffer_size):
 
         self.pvname = pv
+
+        #initialize data and time depending on protocol
+        # TODO: Check monitors for pva as an alternative to raw polling
+        if PROTOCOL == "ca":
+            self.pv = PV(pv, auto_monitor=True) 
+            self.data = np.array([caget(self.pvname)])
+
+        elif PROTOCOL == "pva":
+            self.data = np.array([CONTEXT.get(self.pvname)])
+
         self.tstart = time.time()
         self.time = np.array([self.tstart])
+
         self.buffer_size = buffer_size
-        self.data = np.array([0.0])
 
     def poll(self):
-        
         t = time.time()
-        v = CONTEXT.get(self.pvname)
 
-        self.time = np.append(self.time, t)
-        self.data = np.append(self.data, v)
+        if PROTOCOL == "ca":
+            v = caget(self.pvname)
+
+            if len(self.data) < self.buffer_size:
+                self.time = np.append(self.time, t)
+                self.data = np.append(self.data, v)
+
+            else:
+                self.time[:-1] = self.time[1:]
+                self.time[-1] = t
+                self.data[:-1] = self.data[1:]
+                self.data[-1] = v
+
+        elif PROTOCOL == "pva":
+            v = CONTEXT.get(self.pvname)
+
+            self.time = np.append(self.time, t)
+            self.data = np.append(self.data, v)
+
 
         return self.time - self.tstart, self.data
 
