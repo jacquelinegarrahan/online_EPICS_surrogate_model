@@ -38,8 +38,8 @@ class SurrogateModel:
 
         # load model in thread safe manner
         self.thread_graph = tf.Graph()
-        self.thread_session = tf.Session()
         with self.thread_graph.as_default():
+            self.thread_session = tf.Session()
             with self.thread_session.as_default():
                 self.model = model_from_json(self.json_string.decode("utf-8"))
                 self.model.load_weights(self.model_file)
