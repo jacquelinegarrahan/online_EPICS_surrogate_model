@@ -1,74 +1,67 @@
-# from matrix_tracker import lattice
-import copy
-import multiprocessing
-from pcaspy import Driver, SimpleServer
-import time
-from epics import caget, PV
-import numpy as np
 import random
 
 from p4p.nt import NTScalar
 from p4p.server.thread import SharedPV
 from p4p.server import Server
-from p4p.client.thread import Context
-from p4p.rpc import rpc, quickRPCServer
+
+from scalar_demo.model.surrogate_model import SurrogateModel
+from scalar_demo import PREFIX, MODEL_FILE
 
 
-CONTEXT = Context("pva")
+providers = {}
+model = SurrogateModel(model_file = MODEL_FILE)
+
+class InputHandler:
+
+    def put(self, pv, op):
+        global providers
+        global model
+
+        pv.post(op.value())
+        input_pvs[op.name().replace(f"{PREFIX}:", "")] = op.value()
+        output_pv_state = model.run(input_pvs, verbose=True)
+
+        # now update output variables
+        for pv_item, value in output_pv_state.items():
+            output_provider = providers[f"{PREFIX}:{pv_item}"]
+            output_provider.post(value[0])
+
+        # mark server operation as complete
+        op.done()
+
+    def rpc(self, pv, op):
+        pass
+
 
 class PVAServer:
     def __init__(self, in_pvdb, out_pvdb, model):
 
+        global providers
+
         self.in_pvdb = in_pvdb
         self.out_pvdb = out_pvdb
-        self.providers = {}
-        self.input_pv_state = {}
-        self.output_pv_state = {}
+
+        #initialize model and state
+        input_pvs = {}
+        for in_pv in in_pvdb:
+            input_pvs[in_pv] = in_pvdb[in_pv]["value"]
+
+        model.run(input_pvs, verbose=True)
 
         # create PVs for model inputs
-        for pvname in in_pvdb:
-
-            self.input_pv_state = in_pvdb[pvname]["value"]
-
-            pv = SharedPV(nt=NTScalar("d"), initial=in_pvdb[pvname]["value"])
-
-            # put handlers receive callbacks with put operation requested
-            @pv.put
-            def onPut(pv, op):
-                pv.post(op.value())
-                # run model
-                print("Updated value: %s - %s", op.name(), op.value())
-                self.output_pv_state = self.model.run(self.input_pv_state, verbose=True)
-                # do we want this to be blocking?? 
-                self.set_output_pvs(output_pv_state)
-                op.done()
-
-            self.providers[pvname] = pv
+        for in_pv in in_pvdb:
+            pvname = f"{PREFIX}:{in_pv}"
+            pv = SharedPV(handler=InputHandler(), nt=NTScalar("d"), initial=in_pvdb[in_pv]["value"])
+            providers[pvname] = pv
 
         # create PVs for model outputs
-        for pvname in out_pvdb:
-            self.input_pv_state = out_pvdb[pvname]["value"]
+        for out_pv in out_pvdb:
+            pvname = f"{PREFIX}:{out_pv}"
 
-            pv = SharedPV(nt=NTScalar("d"), initial=out_pvdb[pvname]["value"])
-
-            # put handlers receive callbacks with put operation requested
-            @pv.put
-            def onPut(pv, op):
-                pv.post(op.value())
-                # run model
-                print("Ouput value: %s - %s", op.name(), op.value())
-                op.done()
-
-            self.providers[pvname] = pv
-
-
-    def set_output_pvs(self, output_pvs):
-        for pvame, value in self.output_pv_state:
-            providers[pvname].put(value)
+            # use default handler for the output process variables 
+            # updates are handled from post calls within the input update processing 
+            pv = SharedPV(nt=NTScalar("d"), initial=out_pvdb[out_pv]["value"])
+            providers[pvname] = pv
 
     def start_server(self):
-        # no need to poll
-        prefix = "test_prefix"
-        Server.forever(providers=[self.providers])
-
-
+        Server.forever(providers=[providers])
