@@ -9,6 +9,7 @@ from scalar_demo import PREFIX, MODEL_FILE
 
 
 providers = {}
+input_pvs = {}
 model = SurrogateModel(model_file = MODEL_FILE)
 
 class InputHandler:
@@ -42,7 +43,6 @@ class PVAServer:
         self.out_pvdb = out_pvdb
 
         #initialize model and state
-        input_pvs = {}
         for in_pv in in_pvdb:
             input_pvs[in_pv] = in_pvdb[in_pv]["value"]
 
