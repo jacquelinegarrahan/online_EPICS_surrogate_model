@@ -13,7 +13,7 @@ from bokeh.layouts import column, row
 from bokeh.models.glyphs import MultiLine
 from bokeh.models.glyphs import VArea
 
-from scalar_demo import PVS, PREFIX
+from online_model import PVS, PREFIX
 
 
 # Parse arguments passed through bokeh serve

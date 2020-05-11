@@ -8,7 +8,7 @@ from bokeh.models import ColumnDataSource, Slider
 from bokeh.plotting import figure
 from bokeh.layouts import column, row
 
-from scalar_demo import PREFIX
+from online_model import PREFIX
 
 # Parse arguments passed through bokeh serve
 # requires protocol to be set

@@ -7,7 +7,7 @@ from epics import caget, PV
 import numpy as np
 import random
 
-from scalar_demo import PREFIX
+from online_model import PREFIX
 
 
 class SimDriver(Driver):

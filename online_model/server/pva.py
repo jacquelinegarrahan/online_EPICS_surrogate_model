@@ -5,8 +5,8 @@ from p4p.nt import NTScalar
 from p4p.server.thread import SharedPV
 from p4p.server import Server
 
-from scalar_demo.model.surrogate_model import SurrogateModel
-from scalar_demo import PREFIX, MODEL_FILE
+from online_model.model.surrogate_model import SurrogateModel
+from online_model import PREFIX, MODEL_FILE
 
 providers = {}
 input_pvs = {}

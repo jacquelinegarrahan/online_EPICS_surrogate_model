@@ -8,4 +8,4 @@ PVS = {
 
 }
 
-MODEL_FILE = "scalar_demo/model/model_weights.h5"
+MODEL_FILE = "online_model/model/model_weights.h5"

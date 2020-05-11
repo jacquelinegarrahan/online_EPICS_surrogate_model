@@ -1,7 +1,7 @@
 import click
 import os
 
-MODEL_FILE = "scalar_demo/model/model_weights.h5"
+MODEL_FILE = "online_model/model/model_weights.h5"
 
 
 @click.group()
@@ -19,7 +19,7 @@ def start_server(protocol):
     PROTOCOL options are 'ca' and 'pva'
     """
 
-    from scalar_demo.model.surrogate_model import SurrogateModel
+    from online_model.model.surrogate_model import SurrogateModel
     sm = SurrogateModel(model_file=MODEL_FILE)
 
     # set up process variable databases
@@ -33,7 +33,7 @@ def start_server(protocol):
 
 
     if protocol == "ca":
-        from scalar_demo.server.ca import SyncedSimPVServer
+        from online_model.server.ca import SyncedSimPVServer
 
         # Add in noise
         sim_pvdb["x_95coremit"]["scan"] = 0.2
@@ -44,7 +44,7 @@ def start_server(protocol):
             
 
     elif protocol == "pva":
-        from scalar_demo.server.pva import PVAServer
+        from online_model.server.pva import PVAServer
 
         server = PVAServer(cmd_pvdb, sim_pvdb, sm)
         server.start_server()
