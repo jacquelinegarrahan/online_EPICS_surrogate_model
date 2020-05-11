@@ -1,51 +1,39 @@
 import numpy as np
-import math
 import time
 
-from epics import caget, caput, PV
-
-from bokeh.driving import count
+from p4p.client.thread import Context
 from bokeh.io import curdoc
 from bokeh.models import ColumnDataSource, Slider
 from bokeh.plotting import figure
 from bokeh.layouts import column, row
-from bokeh.models.glyphs import MultiLine
 
+from scalar_demo import PREFIX
+
+CONTEXT = Context("pva")
 
 class pv_buffer:
     def __init__(self, pv, buffer_size):
 
         self.pvname = pv
-        self.pv = PV(pv, auto_monitor=True)
-        self.data = np.array([self.pv.get()])
-
         self.tstart = time.time()
-
         self.time = np.array([self.tstart])
         self.buffer_size = buffer_size
+        self.data = np.array([0.0])
 
     def poll(self):
-
+        
         t = time.time()
-        v = caget(self.pvname)  # self.pv.get()
+        v = CONTEXT.get(self.pvname)
 
-        # print(t,v)
-
-        if len(self.data) < self.buffer_size:
-            self.time = np.append(self.time, t)
-            self.data = np.append(self.data, v)
-
-        else:
-            self.time[:-1] = self.time[1:]
-            self.time[-1] = t
-            self.data[:-1] = self.data[1:]
-            self.data[-1] = v
+        self.time = np.append(self.time, t)
+        self.data = np.append(self.data, v)
 
         return self.time - self.tstart, self.data
 
 
-pvbuffer = pv_buffer("smvm:x_95coremit", 100)
+pvbuffer = pv_buffer(f"{PREFIX}:x_95coremit", 100)
 ts, ys = pvbuffer.poll()
+
 source = ColumnDataSource(dict(x=ts, y=ys * 1e6))
 p = figure(plot_width=400, plot_height=400, y_range=[0, 2])
 p.line(x="x", y="y", line_width=2, source=source)
